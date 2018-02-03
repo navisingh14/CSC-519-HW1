@@ -10,11 +10,18 @@ Navjot Singh
 nsingh9@ncsu.edu
 
 
-#### Post-receive file
-[Click here to go to the post-receive file](https://github.ncsu.edu/nsingh9/CSC-519-HW0/blob/master/post-receive)
+#### Link to the ansible playbook to setup CoffeeMaker application
+[Click here to go to the ansible playbook](https://github.ncsu.edu/nsingh9/CSC-519-HW1/blob/master/install_coffeemaker.yml)
 
-#### Post-commit file
-[Click here to go to the post-commit file](https://github.ncsu.edu/nsingh9/CSC-519-HW0/blob/master/post-commit)
+#### Link to the ansible playbook to setup Selenium Testing server
+[Click here to go to the ansible playbook](https://github.ncsu.edu/nsingh9/CSC-519-HW1/blob/master/install_testingserver.yml)
+
+#### Link to the ansible playbook to run Selenium tests using environment variable
+[Click here to go to the ansible playbook](https://github.ncsu.edu/nsingh9/CSC-519-HW1/blob/master/mvn_tests.yml)
+
+#### Link to the ansible playbook to run Selenium tests using port forwarding
+[Click here to go to the ansible playbook](https://github.ncsu.edu/nsingh9/CSC-519-HW1/blob/master/port_forward.yml)
+
 
 
 #### Screencast link:
