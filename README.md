@@ -25,4 +25,4 @@ nsingh9@ncsu.edu
 
 
 #### Screencast link:
-[Click here to watch the video](https://www.youtube.com/watch?v=BRO5zzdeZoM)  
+[Click here to watch the video](https://youtu.be/n-tSEQN4600)  
