@@ -1,0 +1,109 @@
+---
+- hosts: nodes
+  vars:
+    - mysql_account: "vagrant"
+    - mysql_password: "{{ mysql_root_pass }}"
+    - username: "nsingh9"
+
+  vars_prompt:
+    - name: "mysql_root_pass"
+      prompt: "enter mysql root pass"
+    - name: "password"
+      prompt: "Enter Git password"
+
+  tasks:
+
+  - name: Install dependencies
+    become: yes
+    apt: name={{item}} state=latest
+    with_items:
+      - software-properties-common
+      - dirmngr
+ 
+  - name: Install add-apt-repostory
+    become: yes
+    apt: name=software-properties-common state=latest
+ 
+  - name: Add Oracle Java Repository
+    become: yes
+    apt_repository: 
+      repo: deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main
+      state: present
+ 
+  - name: Add an apt key by id from a keyserver
+    become: yes
+    apt_key:
+      keyserver: keyserver.ubuntu.com
+      id: EEA14886
+ 
+  - name: Accept Java 8 License
+    become: yes
+    debconf: name='oracle-java8-installer' question='shared/accepted-oracle-license-v1-1' value='true' vtype='select'
+ 
+     
+  - name: Install Oracle Java8
+    become: yes
+    apt:
+      pkg: "{{ item }}"
+      state: present
+      force: yes
+    with_items:
+      - ca-certificates
+      - oracle-java8-installer
+      - oracle-java8-set-default
+
+  - name: install maven, git
+    become: yes
+    apt:
+      pkg: "{{ item }}"
+      update_cache: no
+    with_items:
+      - maven
+      - git
+
+  - name: Set MySQL root password before installing
+    debconf: name='mysql-server' question='mysql-server/root_password' value='{{mysql_root_pass | quote}}' vtype='password'
+    become: true
+
+  - name: Confirm MySQL root password before installing
+    debconf: name='mysql-server' question='mysql-server/root_password_again' value='{{mysql_root_pass | quote}}' vtype='password'
+    become: true
+
+  - name: install mysql server
+    apt:
+      pkg: "{{ item }}"
+      state: installed
+    with_items:
+      - mysql-server
+    register: last_result
+    become: yes
+   
+  - name: install client and libs
+    apt:
+      pkg: "{{ item }}"
+      state: installed
+    with_items:
+      - mysql-client
+      - python-mysqldb
+      - php5-mysql
+    become: yes
+
+  - name: git clone repo
+    git:
+      repo: "https://{{ username }}:{{ password }}@github.ncsu.edu/engr-csc326-staff/Onboarding.git"
+      dest: /home/vagrant/hw1
+
+  - name: Copy mysql configuration to nodes
+    template: src=/home/vagrant/templates/.my.cnf dest={{ansible_env.HOME}}/.my.cnf owner={{mysql_account}} mode=0600    
+
+#  - name: Copy and rename hibernate.cfg.xml
+#    command: mv /home/vagrant/hw1/CoffeeMaker/src/main/resources/hibernate-template.cfg.xml /home/vagrant/hw1/CoffeeMaker/src/main/resources/hibernate.cfg.xml
+#   become: yes
+
+  - name: Copy and rename hibernate.cfg.xml
+    template: src=/home/vagrant/synced_folder/hibernate-template.cfg.xml dest=/home/vagrant/hw1/CoffeeMaker/src/main/resources/hibernate.cfg.xml
+    become: yes
+
+  - name: run maven
+    shell: cd /home/vagrant/hw1/CoffeeMaker && mvn spring-boot:run
+    become: yes

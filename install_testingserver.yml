@@ -1,0 +1,92 @@
+---
+- hosts: testingserver
+  vars:
+    - username: "navisingh14"
+
+  vars_prompt:
+    - name: "password"
+      prompt: "Enter Git password"
+
+  tasks:
+
+  - name: Install JAVA dependencies
+    become: yes
+    apt: name={{item}} state=latest
+    with_items:
+      - software-properties-common
+      - dirmngr
+ 
+  - name: Install add-apt-repository
+    become: yes
+    apt: name=software-properties-common state=latest
+ 
+  - name: Add Oracle Java Repository
+    become: yes
+    apt_repository: 
+      repo: deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main
+      state: present
+ 
+  - name: Add an apt key by id from a keyserver
+    become: yes
+    apt_key:
+      keyserver: keyserver.ubuntu.com
+      id: EEA14886
+ 
+  - name: Accept Java 8 License
+    become: yes
+    debconf: name='oracle-java8-installer' question='shared/accepted-oracle-license-v1-1' value='true' vtype='select'
+ 
+     
+  - name: Install Oracle Java8
+    become: yes
+    apt:
+      pkg: "{{ item }}"
+      state: present
+      force: yes
+    with_items:
+      - ca-certificates
+      - oracle-java8-installer
+      - oracle-java8-set-default
+
+  - name: install maven, git
+    become: yes
+    apt:
+      pkg: "{{ item }}"
+    with_items:
+      - maven
+      - git
+
+  - name: add repo for maven
+    become: yes
+    apt_repository:
+      repo: 'ppa:andrei-pozolotin/maven3'
+  
+  - name: update cache
+    become: yes
+    apt: update_cache=yes
+  
+  - name: install maven3
+    become: yes
+    apt:
+      name: maven3
+      state: installed
+
+
+  - name: git clone repo
+    git:
+      repo: "https://{{ username }}:{{ password }}@github.com/CSC-326/Onboarding-Selenium.git"
+      dest: /home/vagrant/Onboarding-Selenium
+    force: no 
+
+  - name: adding no-sandbox line
+    lineinfile:
+      path: /home/vagrant/Onboarding-Selenium/src/src/test/java/selenium/tests/WebTest.java
+#     regexp: '[\s*]options.addArguments\( "headless" \);[\s*]'
+      insertafter: '[\s*]options.addArguments\( "headless" \);[\s*]'
+      line: 'options.addArguments("no-sandbox");'
+
+  - name: installing chrome
+    apt: deb=https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    become: yes
+
+

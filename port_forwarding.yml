@@ -1,0 +1,32 @@
+---
+- hosts: testingserver
+  tasks:
+  
+    - name: check if the key file exists
+      stat:
+        path: /home/vagrant/coffeemaker.key
+      register: stat_result
+
+
+    - name: copy the file if it doesn't exist
+      template:
+        src: /home/vagrant/keys/node0.key
+        dest: /home/vagrant/coffeemaker.key
+        mode: 0600
+      when: stat_result.stat.exists == False
+
+    - name: open the ssh tunnel to the coffeemaker server
+      shell: ssh -i /home/vagrant/coffeemaker.key -M -S my-ctrl-socket -o StrictHostKeyChecking=no -o PasswordAuthentication=yes -fnNT -L 8080:localhost:8080 192.168.33.2
+      
+    - name: run maven tests
+      shell: cd /home/vagrant/Onboarding-Selenium/src && mvn test
+      register: outp
+
+    - debug: msg={{outp.stdout}}
+    - debug: msg={{outp.stderr}}
+
+    - name: close the tunnel to the coffeemaker server
+      shell: ssh -S my-ctrl-socket -O exit 192.168.33.2
+
+
+

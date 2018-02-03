@@ -1,0 +1,30 @@
+---
+- hosts: testingserver
+
+  tasks:
+
+    - name: adding line in WebTest.java to access environment variable
+      lineinfile:
+        path: /home/vagrant/Onboarding-Selenium/src/src/test/java/selenium/tests/WebTest.java
+        regexp: '[\s*]private final String     ROOT = "http://localhost:8080/";[\s*]'
+        insertafter: '[\s*]private final String     ROOT = "http://localhost:8080/";[\s*]'
+        line: 'private final String ROOT = "http://" + System.getenv("IP") + ":8080/";'
+
+
+
+    - name: source IP
+      become: yes
+      shell: export IP=192.168.33.2 && cd /home/vagrant/Onboarding-Selenium/src && mvn test
+      register: outp
+
+
+
+#    - name: starting tests
+ #     shell: cd /home/vagrant/Onboarding-Selenium/src && mvn test
+  #    become: yes
+   #   register: outp
+
+    - debug: msg={{outp.stdout}}
+    - debug: msg={{outp.stderr}}
+
+
